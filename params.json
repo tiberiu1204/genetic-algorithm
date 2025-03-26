@@ -1,16 +1,16 @@
 {
-	"population_size": 20,
+	"population_size": 100,
 	"domain": [
-		-1,
-		2
+		10,
+		1000
 	],
 	"coefficients": [
-		-1,
-		1,
-		2
+		2,
+		3,
+		5
 	],
 	"precision": 6,
 	"crossover_probability": 0.25,
 	"mutation_probability": 0.01,
-	"num_generations": 50
+	"num_generations": 500
 }

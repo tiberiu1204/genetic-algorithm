@@ -58,8 +58,7 @@ def population_to_values(params, population):
 
 
 def terminate(params, t):
-    # return params["num_generations"] == t
-    return t == 1
+    return params["num_generations"] == t
 
 
 def init_population(params):
@@ -75,6 +74,7 @@ def selection(params, population, out_file=None):
         index = 0
         for prob in probabilities:
             out_file.write(f"cromozom {index + 1} probabilitate {prob}\n")
+            index += 1
 
     def print_intervals():
         out_file.write("Intervale probabilitati selectie\n")
@@ -97,9 +97,13 @@ def selection(params, population, out_file=None):
     selections = np.searchsorted(intervals, u) - 1
 
     if out_file:
+        out_file.write(f"Elementul elitist: {
+                       elitist_index + 1} (rezervam ultimul loc pentru el))\n")
         print_probabilities()
         print_intervals()
         print_selections()
+        print_population(
+            params, population[selections], out_file, "Dupa selectie")
 
     return population[selections], elitist
 
@@ -171,12 +175,41 @@ def crossover(params, population, out_file=None):
         print_crossovers()
         print_population(params, population, out_file, "Dupa recombinare")
 
+    return population
+
 
 def mutation(params, population, out_file=None):
-    pass
+    def print_mutated():
+        out_file.write("Au fost modificati cromozomii:\n")
+        for chromosome in np.where(mutated)[0]:
+            out_file.write(f"{chromosome + 1}\n")
+
+    def mutate(chromosome):
+        bit_positions = np.arange(chromosome_len - 1, -1, -1)
+        bits = (chromosome >> bit_positions) & 1
+        u = np.random.uniform(size=chromosome_len)
+        bits[u < probability] ^= 1
+        return np.any(u < probability), np.dot(bits, 2**np.arange(len(bits))[::-1])
+
+    chromosome_len, probability = params["chromosome_len"], params["mutation_probability"]
+    vect_mutate = np.vectorize(mutate)
+    mutated, new_population = vect_mutate(population)
+
+    if out_file:
+        out_file.write(f"\nProbabilitate de mutatie pentru fiecare gena {
+                       probability}\n")
+        print_mutated()
+        print_population(params, new_population, out_file, "Dupa mutatie")
+
+    return new_population
 
 
 def simulate():
+    def print_max_evolution():
+        out_file.write("\nEvolutia maximului\n")
+        maximums = f(params, population_to_values(params, np.array(elitists)))
+        for maximum in maximums:
+            out_file.write(f"{maximum}\n")
     OUTPUT_FILE = "./evolution.txt"
     out_file = open(OUTPUT_FILE, "w")
 
@@ -189,6 +222,7 @@ def simulate():
     population = init_population(params)
     print_population(params, population, out_file, "Populatia initiala")
 
+    elitists = []
     while not terminate(params, t):
         out_file_first_iteration = None if t else out_file
         population, elitist = selection(
@@ -196,8 +230,13 @@ def simulate():
         population = crossover(params, population, out_file_first_iteration)
         population = mutation(params, population, out_file_first_iteration)
         population = np.append(population, elitist)
+        if out_file_first_iteration:
+            print_population(params, population, out_file,
+                             "Dupa adaugarea elementului elitist")
+        elitists.append(elitist)
         t += 1
 
+    print_max_evolution()
     out_file.close()
 
 
