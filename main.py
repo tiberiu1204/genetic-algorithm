@@ -206,10 +206,13 @@ def mutation(params, population, out_file=None):
 
 def simulate():
     def print_max_evolution():
-        out_file.write("\nEvolutia maximului\n")
+        out_file.write("\nEvolutia generatiilor\n")
         maximums = f(params, population_to_values(params, np.array(elitists)))
+        index = 1
         for maximum in maximums:
-            out_file.write(f"{maximum}\n")
+            out_file.write(f"Genratia {index}: max={
+                           maximum} mean={means[index - 1]}\n")
+            index += 1
     OUTPUT_FILE = "./evolution.txt"
     out_file = open(OUTPUT_FILE, "w")
 
@@ -223,6 +226,7 @@ def simulate():
     print_population(params, population, out_file, "Populatia initiala")
 
     elitists = []
+    means = []
     while not terminate(params, t):
         out_file_first_iteration = None if t else out_file
         population, elitist = selection(
@@ -234,6 +238,8 @@ def simulate():
             print_population(params, population, out_file,
                              "Dupa adaugarea elementului elitist")
         elitists.append(elitist)
+        means.append(
+            np.mean(f(params, population_to_values(params, population))))
         t += 1
 
     print_max_evolution()
