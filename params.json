@@ -1,13 +1,13 @@
 {
 	"population_size": 20,
 	"domain": [
-		-1,
-		2
+		0,
+		100
 	],
 	"coefficients": [
-		-1,
-		1,
-		2
+		2,
+		3,
+		4
 	],
 	"precision": 6,
 	"crossover_probability": 0.25,

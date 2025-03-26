@@ -1,6 +1,7 @@
 import json
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 INPUT_JSON = "params.json"
 
@@ -10,7 +11,6 @@ def parse_json(file_path):
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
 
-            # Extragem și validăm fiecare parametru
             population_size = data.get("population_size")
             domain = data.get("domain")
             coefficients = data.get("coefficients")
@@ -207,7 +207,6 @@ def mutation(params, population, out_file=None):
 def simulate():
     def print_max_evolution():
         out_file.write("\nEvolutia generatiilor\n")
-        maximums = f(params, population_to_values(params, np.array(elitists)))
         index = 1
         for maximum in maximums:
             out_file.write(f"Genratia {index}: max={
@@ -242,9 +241,41 @@ def simulate():
             np.mean(f(params, population_to_values(params, population))))
         t += 1
 
+    maximums = f(params, population_to_values(params, np.array(elitists)))
+    means = np.array(means)
+
     print_max_evolution()
     out_file.close()
 
+    return maximums, means
+
+
+def plot_results(maximums, means):
+
+    generations = np.arange(len(maximums))
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
+
+    ax1.plot(generations, maximums, color='green',
+             label='Maximums', linewidth=2)
+    ax1.set_title('Fitness-uri Maxime în functie de Generatie')
+    ax1.set_xlabel('Generatie')
+    ax1.set_ylabel('Fitness')
+    ax1.legend()
+    ax1.grid(True)
+
+    ax2.plot(generations, means, color='violet', label='Means', linewidth=2)
+    ax2.set_title('Fitness-uri Medii în funcrie de Generatie')
+    ax2.set_xlabel('Generatie')
+    ax2.set_ylabel('Fitness')
+    ax2.legend()
+    ax2.grid(True)
+
+    plt.tight_layout()
+
+    plt.show()
+
 
 if __name__ == "__main__":
-    simulate()
+    maximums, means = simulate()
+    plot_results(maximums, means)
